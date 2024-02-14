@@ -14,7 +14,7 @@ if __name__ == "__main__":
     documents_data = load_json_data(documents_data_path)
 
     query = "le vaccin du covid"
-    query_results = rank_documents(query, title_pos_index, content_pos_index, documents_data, filter_type="OR")
+    query_results = rank_documents(query, title_pos_index, content_pos_index, documents_data, filter_type="OR", bm25=True)
 
     # Sauvegarde des résultats
     output_path = 'data/output/results.json'
