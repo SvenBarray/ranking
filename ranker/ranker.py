@@ -1,10 +1,10 @@
 import re
 
-def rank_documents(query, title_pos_index, content_pos_index, documents_data):
+def rank_documents(query, title_pos_index, content_pos_index, documents_data, filter_type='AND'):
     """Calcule le score de ranking des documents, basé sur le nombre d'occurences des mots-clés de la requête"""
     tokens = preprocess_query(query)
     # Dans un soucis de performance, on travaille sur les documents dont les tokens sont dans le titre, mais le score se calcule sur le contenu.
-    filtered_documents = filter_documents_by_title(tokens, title_pos_index)
+    filtered_documents = filter_documents_by_title(tokens, title_pos_index, filter_type)
     total_documents = len(documents_data)
     filtered_documents_count = len(filtered_documents)
 
@@ -29,15 +29,22 @@ def preprocess_query(query):
     tokens = query.split()
     return tokens
 
-def filter_documents_by_title(tokens, title_pos_index):
-    """Filtre les documents contenant tous les tokens de la requête"""
-    documents_with_all_tokens = set()
-    # Initialisation avec les documents contenant le premier token
-    if tokens:
-        documents_with_all_tokens = set(title_pos_index.get(tokens[0], []))
-        for token in tokens[1:]:
-            documents_with_all_tokens &= set(title_pos_index.get(token, []))
-    return list(documents_with_all_tokens)
+def filter_documents_by_title(tokens, title_pos_index, filter_type='AND'):
+    """Filtre les documents basé sur les tokens de la requête avec un filtre de type ET ou OU."""
+    all_documents = set()
+    documents_with_any_token = set()
+
+    for token in tokens:
+        documents_with_token = set(title_pos_index.get(token, {}).keys())
+        if filter_type.upper() == 'AND':
+            if not all_documents:
+                all_documents = documents_with_token
+            else:
+                all_documents &= documents_with_token
+        else:  # Pour le filtre OU
+            documents_with_any_token |= documents_with_token
+
+    return list(all_documents if filter_type.upper() == 'AND' else documents_with_any_token)
 
 def get_title_and_url_from_id(doc_id, documents_data):
     """Récupération du tutre et de l'url de la page depuis sont id"""

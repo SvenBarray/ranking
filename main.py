@@ -13,8 +13,8 @@ if __name__ == "__main__":
     content_pos_index = load_json_data(content_index_path)
     documents_data = load_json_data(documents_data_path)
 
-    query = "erreur covid politique"
-    query_results = rank_documents(query, title_pos_index, content_pos_index, documents_data)
+    query = "erreur covid"
+    query_results = rank_documents(query, title_pos_index, content_pos_index, documents_data, filter_type="AND")
 
     # Sauvegarde des résultats
     output_path = 'data/output/results.json'
