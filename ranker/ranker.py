@@ -1,5 +1,8 @@
 import re
 
+STOP_WORDS = set(['le', 'la', 'les', 'de', 'des', 'du', 'et', 'en', 'un', 'une', 'pour', 'dans', 'que', 'qui', 'sur', 'au', 'avec', 'ce', 'ces', 'par', 'se', 'comme', 'à', 'a', 'est'])
+
+
 def rank_documents(query, title_pos_index, content_pos_index, documents_data, filter_type='AND'):
     """Calcule le score de ranking des documents, basé sur le nombre d'occurences des mots-clés de la requête"""
     tokens = preprocess_query(query)
@@ -10,11 +13,7 @@ def rank_documents(query, title_pos_index, content_pos_index, documents_data, fi
 
     document_scores = {}
     for doc_id in filtered_documents:
-        # Calculer le score du contenu
-        score = 0
-        for token in tokens:
-            if token in content_pos_index and str(doc_id) in content_pos_index[token]:
-                score += content_pos_index[token][str(doc_id)]['count']
+        score = calculate_score(tokens, doc_id, content_pos_index)
         document_scores[doc_id] = score
 
     # Trier les documents par leur score
@@ -66,3 +65,17 @@ def format_results(total_documents, filtered_documents_count, ranked_documents, 
             "score": score
         })
     return results_data
+
+def calculate_score(tokens, doc_id, content_pos_index):
+    """Calcule le score en fonction tokens d'un document depuis son ID"""
+    score = 0
+    significant_weight = 1000  # Poids pour les tokens significatifs
+    stop_word_weight = 1  # Poids pour les stop words
+
+    for token in tokens:
+        if token in content_pos_index and str(doc_id) in content_pos_index[token]:
+            # Appliquer un poids différent si le token est un stop word ou non
+            weight = stop_word_weight if token in STOP_WORDS else significant_weight
+            score += weight * content_pos_index[token][str(doc_id)]['count']
+    
+    return score
