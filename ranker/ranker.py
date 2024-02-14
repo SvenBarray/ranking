@@ -89,7 +89,7 @@ def bm25_score(doc_id, tokens, content_pos_index, documents_data, n_docs, avgdl,
     for token in tokens:
         f = content_pos_index[token].get(str(doc_id), {}).get('count', 0)
         docs_with_token = len(content_pos_index.get(token, {}))
-        idf_val = idf(token, n_docs, docs_with_token)
+        idf_val = idf(n_docs, docs_with_token)
         weight = stop_word_weight if token in STOP_WORDS else significant_word_weight
         score += weight * idf_val * (f * (k1 + 1)) / (f + k1 * (1 - b + b * (doc_len / avgdl)))
     return score
